@@ -1,0 +1,32 @@
+{
+  "status": "preliminary FAST_MODE results",
+  "source_commit": "90eddc0308b59532c46bbf6e62854510af6fac08",
+  "n_subjects": 8,
+  "subjects": ["subj01", "subj02", "subj03", "subj04", "subj05", "subj06", "subj07", "subj08"],
+  "rois": ["EBA", "FFA", "PPA"],
+  "seed": 42,
+  "encoding": {
+    "outer_folds": 3,
+    "inner_folds": 2,
+    "alphas": [0.01, 0.0517947468, 0.2682695795, 1.3894954944, 7.1968567300, 37.2759372031, 193.0697728883, 1000.0],
+    "metric": "per-vertex R2 averaged over outer folds"
+  },
+  "rsa": {
+    "subset_size_per_subject": 600,
+    "permutations": 200,
+    "fmri_distance": "correlation after column standardization",
+    "feature_distance": "cosine after L2 normalization and column standardization",
+    "similarity": "Spearman rho",
+    "permutation_alternative": "two-sided"
+  },
+  "features": {
+    "clip": "OpenCLIP ViT-B-32, laion2b_s34b_b79k",
+    "resnet": "torchvision ResNet-50, IMAGENET1K_V1"
+  },
+  "official_challenge_test_evaluated": false,
+  "notes": [
+    "Values in findings.csv are group-level medians across subjects.",
+    "Median paired differences need not equal differences between group medians.",
+    "The full named configuration has not been executed or reported."
+  ]
+}

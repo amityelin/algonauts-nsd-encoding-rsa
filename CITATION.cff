@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this project, cite the project authors and the Algonauts/NSD source papers."
+title: "Encoding Models and Representational Similarity Analysis of Visual Cortex"
+type: software
+authors:
+  - family-names: Yelin
+    given-names: Amit
+  - family-names: Lopes
+    given-names: Iking Jose Enrique
+repository-code: "https://github.com/amityelin/algonauts-nsd-encoding-rsa"
+date-released: 2025-08-19
+preferred-citation:
+  type: software
+  title: "Encoding Models and Representational Similarity Analysis of Visual Cortex"
+  authors:
+    - family-names: Yelin
+      given-names: Amit
+    - family-names: Lopes
+      given-names: Iking Jose Enrique

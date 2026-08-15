@@ -1,32 +1,13 @@
-# --- Data location & setup (Algonauts 2023 tutorial data) ---
-# The Algonauts challenge data live in Google Drive at:
-# https://drive.google.com/drive/folders/1DUf3nGNNFk6YjRjQtZPfAY5N105GoGJb?usp=drive_link
-#
-# To use in Colab:
-# 1) In Google Drive, create a Shortcut to the folder named:
-#    "algonauts_2023_tutorial_data" (place it under My Drive).
-# 2) In Colab, mount Drive and point notebooks to:
-#    /content/drive/MyDrive/algonauts_2023_tutorial_data
-# ------------------------------------------------------------
-
-# Core numerics & data
-numpy>=1.23
-scipy>=1.9
-pandas>=1.5
-
-# Modeling & stats
-scikit-learn>=1.2
-statsmodels>=0.14
-
-# Deep learning & features
+# Runtime dependency ranges; CI targets Python 3.10 and 3.11.
+numpy>=1.23,<3
+scipy>=1.9,<2
+pandas>=1.5,<3
+scikit-learn>=1.2,<2
+statsmodels>=0.14,<1
 torch>=2.0
 torchvision>=0.15
 open-clip-torch>=2.23
-
-# Plotting / IO / utils
-matplotlib>=3.7
+matplotlib>=3.7,<4
 Pillow>=9.5
 tqdm>=4.65
-
-# Notebooks (optional outside Colab)
-ipykernel>=6.0
+ipykernel>=6

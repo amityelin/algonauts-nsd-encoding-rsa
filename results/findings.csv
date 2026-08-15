@@ -1,0 +1,4 @@
+result_status,n_subjects,roi,clip_group_median_r2,resnet_group_median_r2,median_paired_delta_r2,clip_group_median_rsa_rho,resnet_group_median_rsa_rho,median_paired_delta_rsa_rho
+preliminary_FAST_MODE,8,EBA,0.202472,0.178431,0.026325,0.198516,0.232025,-0.024851
+preliminary_FAST_MODE,8,FFA,0.184821,0.169054,0.023377,0.175794,0.191782,-0.019209
+preliminary_FAST_MODE,8,PPA,0.217915,0.200271,0.019619,0.144652,0.194571,-0.051636
