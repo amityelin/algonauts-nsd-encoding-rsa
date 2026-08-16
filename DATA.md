@@ -29,18 +29,17 @@ algonauts_2023_tutorial_data/
 Do not copy the downloaded data into this repository. Set `ALGONAUTS_DATA_ROOT` to the
 directory above and `ALGONAUTS_OUTPUT_ROOT` to a separate writable directory for derived
 artifacts. Alternatively, pass both roots explicitly to `get_paths`. Colab users may mount
-Drive; the original Drive-shortcut defaults are used only after Colab has actually loaded
-`google.colab`. Local runs never infer paths from the current directory or `/content`.
+their chosen storage, but must pass its data and output paths explicitly or set both documented
+environment variables. No environment infers paths from the current directory or `/content`.
 
-Resolution order for each root is: explicit argument, corresponding environment variable,
-then the Colab-only default. If none applies, configuration raises an error explaining how to
-set the missing root.
+Resolution order for each root is: explicit argument, then the corresponding environment
+variable. If neither applies, configuration raises an error explaining how to set the missing root.
 
 ## Derived outputs
 
 Large derived outputs remain external because feature arrays, response matrices, and RDMs are
-not suitable for normal Git storage. The existing shared folder is linked from
-`algonauts outputs/link _to_folder.txt`.
+not suitable for normal Git storage. This repository intentionally contains no external-output
+folder link.
 
 Before redistributing any derived artifact, verify that it does not reproduce restricted source
 data and that the relevant dataset and model-weight terms permit sharing. The small CSV and JSON

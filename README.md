@@ -45,10 +45,6 @@ and subject count before plotting. Rendering may vary slightly with plotting-lib
 operating-system versions; the repository does not promise byte-identical PNG hashes across
 environments. The figures contain no additional analysis or subject-level claims.
 
-The existing preliminary figures are stored with the external derived outputs linked from
-[`algonauts outputs/link _to_folder.txt`](algonauts%20outputs/link%20_to_folder.txt). They
-must be interpreted under the same FAST_MODE label; no full-mode figures are presented.
-
 ## Evaluation design and leakage prevention
 
 Algonauts provides training fMRI responses and withholds test fMRI responses. Consequently,
@@ -107,7 +103,7 @@ changed in this infrastructure stage.
 ```
 
 The repository does not contain NSD/Algonauts images, fMRI matrices, model feature caches,
-or full RDMs. `algonauts outputs/` currently contains only a link to external derived outputs.
+full RDMs, or links to external derived-output folders.
 
 ## Reproducible setup
 
@@ -143,11 +139,11 @@ $env:ALGONAUTS_OUTPUT_ROOT = "D:\results\algonauts_outputs"
 $env:ALGONAUTS_RUN_MODE = "fast"
 ```
 
-Path precedence is explicit `get_paths(data_root=..., output_root=...)` arguments, then the
-documented environment variables, then Colab defaults only in an active Google Colab runtime.
-A local run without configured roots stops with an actionable error instead of guessing paths.
-In Colab, mount Google Drive before calling `get_paths()`; compatible Drive defaults are then
-available. See [`DATA.md`](DATA.md) for concrete access and directory instructions.
+Path precedence is explicit `get_paths(data_root=..., output_root=...)` arguments, followed by
+the documented environment variables. A run without configured roots stops with an actionable
+error instead of guessing paths. In Colab, mount the desired storage and pass its paths explicitly
+or set both environment variables before calling `get_paths()`. See [`DATA.md`](DATA.md) for
+concrete access and directory instructions.
 
 ### Named configurations
 
@@ -182,8 +178,3 @@ subsampling in FAST_MODE.
   computational intelligence*. <https://doi.org/10.1038/s41593-021-00962-x>
 
 Project attribution metadata is available in [`CITATION.cff`](CITATION.cff).
-
-## Unresolved publication decisions
-
-- Confirm that both existing Google Drive identifiers may remain public. They are unchanged here:
-  the configured Colab shortcut identifier and the external-derived-output folder link.

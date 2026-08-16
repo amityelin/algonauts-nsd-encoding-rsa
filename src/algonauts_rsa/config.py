@@ -1,9 +1,8 @@
 """Portable paths and named analysis configurations.
 
-Filesystem resolution is deterministic: explicit arguments take precedence, then
-the documented environment variables, then Colab-only defaults when actually
-running in Google Colab. Local runs without configured paths fail with an
-actionable error.
+Filesystem resolution is deterministic: explicit arguments take precedence,
+followed by the documented environment variables. Runs without configured paths
+fail with an actionable error, including in Google Colab.
 
 ``ALGONAUTS_DATA_ROOT``
     Directory containing ``subj01`` ... ``subj08``.
@@ -18,7 +17,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 import os
 from pathlib import Path
-import sys
 
 import numpy as np
 
@@ -97,34 +95,20 @@ def get_config(name: str | None = None) -> AnalysisConfig:
         raise ValueError(f"Unknown run mode {mode!r}; choose from {sorted(CONFIGS)}") from exc
 
 
-def _colab_default_data_root() -> Path:
-    shortcut_id = os.getenv("ALGONAUTS_DRIVE_SHORTCUT_ID", "1DUf3nGNNFk6YjRjQtZPfAY5N105GoGJb")
-    return Path("/content/drive/.shortcut-targets-by-id") / shortcut_id / "algonauts_2023_tutorial_data"
-
-
-def _running_in_colab() -> bool:
-    """Return true only for an active Google Colab Python runtime."""
-    return "google.colab" in sys.modules
-
-
-def _resolve_root(explicit, environment_name: str, colab_default: Path | None) -> Path:
+def _resolve_root(explicit, environment_name: str) -> Path:
     if explicit is not None:
         return Path(explicit).expanduser()
     environment_value = os.getenv(environment_name)
     if environment_value:
         return Path(environment_value).expanduser()
-    if _running_in_colab() and colab_default is not None:
-        return colab_default
     raise RuntimeError(
         f"No path configured for {environment_name}. Pass it explicitly to get_paths(), "
-        f"or set the {environment_name} environment variable. Colab defaults are used "
-        "only inside an active Google Colab runtime."
+        f"or set the {environment_name} environment variable. Colab users must supply "
+        "the mounted data and output paths through one of those mechanisms."
     )
 
 
 def get_paths(data_root=None, output_root=None) -> ProjectPaths:
-    data_root = _resolve_root(data_root, "ALGONAUTS_DATA_ROOT", _colab_default_data_root())
-    output_root = _resolve_root(
-        output_root, "ALGONAUTS_OUTPUT_ROOT", Path("/content/drive/MyDrive/algonauts_outputs")
-    )
+    data_root = _resolve_root(data_root, "ALGONAUTS_DATA_ROOT")
+    output_root = _resolve_root(output_root, "ALGONAUTS_OUTPUT_ROOT")
     return ProjectPaths(data_root=data_root, output_root=output_root)
