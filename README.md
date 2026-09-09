@@ -1,117 +1,180 @@
-# Encoding Models and Representational Similarity Analysis of Visual Cortex (Algonauts 2023 / NSD)
+# Visual-cortex encoding and representational similarity with CLIP and ResNet
 
+This project asks whether two pretrained vision models—CLIP ViT-B/32 and ResNet-50—capture
+human visual-cortex responses to natural images. It combines vertex-wise ridge encoding,
+representational similarity analysis (RSA), nested cross-validation, permutation testing,
+and paired group-level comparisons across eight Algonauts 2023 participants and three
+bilateral regions of interest (EBA, FFA, and PPA).
 
-This project analyzes high-level visual cortex responses from the **Algonauts Challenge dataset**, 
-a subset of the **Natural Scenes Dataset (NSD)** (Allen et al., 2022).  
-We implement **encoding models** and **representational similarity analysis (RSA)** to compare 
-fMRI brain responses with state-of-the-art vision models (e.g., CLIP, ResNet).
+> **Result status:** every numerical finding below is a **preliminary FAST_MODE result**.
+> These values were produced with **3 outer folds, 2 inner folds, 200 RSA permutations,
+> and a 600-image RSA subset per subject**. The named `full` configuration has been defined
+> for a future approved run, but no full-mode result is reported here.
 
----
+## Preliminary FAST_MODE findings
 
+The preliminary results suggest a metric-dependent model comparison: CLIP has higher
+group-level median encoding R², while ResNet has higher group-level median RSA ρ in all
+three reported ROIs. These are descriptive group summaries from eight subjects, not
+official Algonauts challenge-test scores.
 
-## Dataset (Algonauts 2023 / NSD)
+| ROI | CLIP median R² | ResNet median R² | Median paired ΔR² | CLIP median RSA ρ | ResNet median RSA ρ | Median paired Δρ |
+|---|---:|---:|---:|---:|---:|---:|
+| EBA | 0.202 | 0.178 | +0.026 | 0.199 | 0.232 | −0.025 |
+| FFA | 0.185 | 0.169 | +0.023 | 0.176 | 0.192 | −0.019 |
+| PPA | 0.218 | 0.200 | +0.020 | 0.145 | 0.195 | −0.052 |
 
-**Source**  
-The Algonauts challenge data comes from the **Natural Scenes Dataset (NSD)** (Allen et al., 2022): high-quality 7T fMRI from **8 subjects** viewing natural images (COCO; Lin et al., 2014).
+Values are group-level medians. “Median paired Δ” is the median across subjects of each
+subject's CLIP-minus-ResNet difference. It need not equal the difference between the two
+group medians. The machine-readable table is in [`results/findings.csv`](results/findings.csv),
+and the exact preliminary run description is in
+[`results/preliminary_fast_mode_manifest.json`](results/preliminary_fast_mode_manifest.json).
 
-**Stimuli & design**
-- Each subject viewed **10,000 distinct images**; **1,000** were shared across all subjects (8 × 9,000 unique + 1,000 shared = **73,000** total unique images).
-- Each image was shown **3×** ⇒ **30,000 image trials** per subject.
-- Task: **continuous recognition** while maintaining fixation (report if the current image was seen before).
+![Preliminary FAST_MODE group medians](results/figures/preliminary_group_medians.png)
 
-**Sessions & splits**
-- Data were collected over ~**40 sessions** per subject (not all completed every session).
-- For Algonauts 2023, the **last 3 sessions** per subject are **withheld** and define the **test split** (test images only; **no test fMRI**). The remaining sessions form the **training split**.
+![Preliminary FAST_MODE median paired differences](results/figures/preliminary_paired_deltas.png)
 
-**Modality & preprocessing**
-- fMRI responses are **preprocessed BOLD amplitudes**, **projected to cortical surface** (FreeSurfer **fsaverage**).
-- The challenge distributes a **subset of visual-cortex vertices** (LH/RH provided separately) that were maximally visually responsive.
-- **Training fMRI** are **z-scored within session** and **averaged across repeats**.
-- We analyze **surface vertices** (not volume voxels) and build **bilateral** ROIs by concatenating LH/RH.
+Both figures are generated from the validated CSV and manifest with one command:
 
-> **ROIs used here:** EBA, FFA (FFA-1/2), PPA (from provided challenge-space labels/mappings).
-
----
-
-## Analysis methods
-
-1. **ROI extraction**
-   - Load Algonauts cortical-surface matrices and label maps; build **bilateral** EBA/FFA/PPA vertex matrices per subject.
-   - Persist per-ROI arrays and per-subject image metadata (NSD IDs, file names).
-
-2. **Feature extraction**
-   - Vision models: **CLIP ViT-B/32** (LAION) and **ResNet-50** (ImageNet).
-   - Apply model-specific preprocessing and **L2 normalization**.
-   - Features are cached to avoid recomputation (GPU/AMP supported).
-
-3. **Encoding (vertex-wise ridge regression)**
-   - **Nested cross-validation**: inner loop selects α (log-grid), outer loop estimates generalization.
-   - Metrics: per-vertex **R²**; ROI summaries reported as **median**, **mean**, and **top-10% mean** R².
-
-4. **RSA (representational geometry)**
-   - RDMs: **correlation distance** on fMRI (responses column-zscored per session, then averaged across repeats), **cosine distance** on model features.
-   - To manage O(n²) scaling, a **fixed random subset of 600 images per subject** is used (identical across models for comparability).
-   - Similarity: **Spearman ρ** between upper triangles of model and fMRI RDMs.
-   - Significance: **permutation test** by shuffling feature RDM entries (**N=1000 by default, configurable**).
-
-5. **Aggregation & visualization**
-   - Group-level plots: ROI × subject heatmaps, bar plots with bootstrap **95% CIs**, and **R² vs ρ** scatter.
-   - Model comparison (CLIP vs ResNet): paired **Wilcoxon tests**, **BH-FDR correction**, and **rank-biserial effect sizes**.
-
-> **Note:** All training fMRI are **surface-projected vertex responses**. Data are **z-scored within session** and **averaged across repeats** before model fitting.
-
----
-
-## Repository layout
-```
-algonauts_nsd_encoding_rsa/
-│
-├── notebooks/
-│ ├── 1. data_prep_roi_extract.ipynb # extract ROI data & prepare voxel/vertex responses
-│ ├── 2. encoding_rsa.ipynb # run nested ridge encoding + RSA per ROI (with randomization options)
-│ ├── 3.group-aggregation_viz.ipynb # aggregate subjects & ROIs, group-level stats and visualization
-│ └── 4. compare_models.ipynb # model comparisons (CLIP vs ResNet, etc.)
-│
-├── algonauts outputs/
-│ ├── multiROI/
-│ │ ├── EBA/ FFA/ PPA/meta # per-ROI outputs (json, npy, plots)
-│ │ ├── subj01.npy ... subj08.npy # per-subject arrays
-│ │
-│ ├── group_clip/ # group-level CLIP analysis
-│ │ ├── plots/ # figures (RSA heatmaps, barplots, etc.)
-│ │ └── group_summary_day3.csv # group summary stats
-│ │
-│ ├── group_resnet/ # group-level ResNet analysis
-│ │ └── plots/ # figures
-│ │
-│ └── group_compare/ # CLIP vs ResNet deltas, stats, figs
-│ └── plots/
-│
-├── README.md # project description and instructions
-└── requirements.txt # Python dependencies
-```
-
----
-
-## Requirements
-
-Python 3.10+ recommended.
-
-Install dependencies with:
 ```bash
-pip install -r requirements.txt
-
+python scripts/build_readme_figures.py
 ```
----
+
+The generator validates the exact CSV schema, expected EBA/FFA/PPA rows, preliminary status,
+and subject count before plotting. Rendering may vary slightly with plotting-library, font, and
+operating-system versions; the repository does not promise byte-identical PNG hashes across
+environments. The figures contain no additional analysis or subject-level claims.
+
+## Evaluation design and leakage prevention
+
+Algonauts provides training fMRI responses and withholds test fMRI responses. Consequently,
+this repository does **not** report performance on the official challenge test set.
+
+For encoding, each subject is modeled independently:
+
+1. The supplied training responses are aligned with pretrained image features in stimulus order.
+2. An outer shuffled K-fold split creates internal held-out evaluation folds.
+3. Within each outer training fold, `RidgeCV` selects one ridge α using the inner folds.
+4. The selected model is fitted on that outer training fold and evaluated only on its held-out fold.
+5. Per-vertex R² is averaged over outer folds and summarized within each ROI.
+
+The source responses are supplied session-normalized and averaged across repeats, so each
+subject-level analysis matrix contains one row per retained training stimulus. Model features
+are extracted without using fMRI responses. CLIP and ResNet comparisons are paired by subject
+and ROI, and the same deterministic 600-image subject-level subset is used across ROIs for RSA.
+Subjects are never pooled to fit an encoding model. The current split is random at the image
+level; session-aware or category-aware splitting is a separate scientific decision and is not
+changed in this infrastructure stage.
+
+## Methods
+
+- **Data:** Algonauts 2023, derived from the Natural Scenes Dataset (NSD); eight subjects.
+- **ROIs:** bilateral EBA, FFA (FFA-1/2), and PPA from the supplied challenge-space mappings.
+- **Features:** OpenCLIP ViT-B/32 (`laion2b_s34b_b79k`) and torchvision ResNet-50
+  (`IMAGENET1K_V1`), using their model-specific image preprocessing and L2-normalized features.
+- **Encoding:** vertex-wise ridge regression with nested cross-validation; per-vertex R².
+- **RSA:** correlation-distance fMRI RDMs, cosine-distance feature RDMs, Spearman ρ, and a
+  two-sided label-permutation test. The existing feature-wise standardization behavior is retained.
+- **Group summaries:** medians across subjects; paired CLIP-minus-ResNet comparisons by ROI.
+
+## Repository structure
+
+```text
+.
+├── .github/workflows/ci.yml
+├── notebooks/
+│   ├── 1. data_prep_roi-extract.ipynb
+│   ├── 2. encoding_rsa.ipynb
+│   ├── 3. group-aggregation_viz.ipynb
+│   └── 4. models_comparison.ipynb
+├── results/
+│   ├── figures/
+│   │   ├── preliminary_group_medians.png
+│   │   └── preliminary_paired_deltas.png
+│   ├── findings.csv
+│   └── preliminary_fast_mode_manifest.json
+├── scripts/build_readme_figures.py
+├── src/algonauts_rsa/       # reusable configuration and analysis functions
+├── tests/test_smoke.py       # synthetic-data test; no NSD download required
+├── DATA.md
+├── CITATION.cff
+├── pyproject.toml
+└── requirements.txt
+```
+
+The repository does not contain NSD/Algonauts images, fMRI matrices, model feature caches,
+full RDMs, or links to external derived-output folders.
+
+## Reproducible setup
+
+Python 3.10 or 3.11 is recommended. The lightweight test path does not download neural data
+or pretrained model weights.
+
+```bash
+python -m venv .venv
+# macOS/Linux: source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev]"
+pytest
+```
+
+On Windows PowerShell, activate with `.\.venv\Scripts\Activate.ps1`; in Command Prompt,
+use `.venv\Scripts\activate.bat`. Install `.[features,analysis]` only for notebook runs that
+need pretrained feature extraction and the complete interactive analysis environment. CI uses
+only the lightweight core and development dependencies and never downloads model weights.
+
+Set portable paths with environment variables:
+
+```bash
+export ALGONAUTS_DATA_ROOT=/path/to/algonauts_2023_tutorial_data
+export ALGONAUTS_OUTPUT_ROOT=/path/to/derived_outputs
+export ALGONAUTS_RUN_MODE=fast  # smoke | fast | full
+```
+
+PowerShell equivalents:
+
+```powershell
+$env:ALGONAUTS_DATA_ROOT = "D:\data\algonauts_2023_tutorial_data"
+$env:ALGONAUTS_OUTPUT_ROOT = "D:\results\algonauts_outputs"
+$env:ALGONAUTS_RUN_MODE = "fast"
+```
+
+Path precedence is explicit `get_paths(data_root=..., output_root=...)` arguments, followed by
+the documented environment variables. A run without configured roots stops with an actionable
+error instead of guessing paths. In Colab, mount the desired storage and pass its paths explicitly
+or set both environment variables before calling `get_paths()`. See [`DATA.md`](DATA.md) for
+concrete access and directory instructions.
+
+### Named configurations
+
+| Mode | Purpose | Outer/inner folds | Permutations | RSA subset |
+|---|---|---:|---:|---:|
+| `smoke` | Synthetic or one-subject structural check | 2 / 2 | 10 | 32 |
+| `fast` | Configuration used for preliminary results | 3 / 2 | 200 | 600 |
+| `full` | Defined for a future approved final run | 5 / 3 | 1,000 | All retained images |
+
+Defining `full` does not imply that it has been executed.
+
+## Data access, attribution, and limitations
+
+Data access is governed by the Algonauts 2023 and NSD terms. This repository provides code
+and small derived summaries only. Users must obtain the dataset from its official source and
+must not infer that the repository grants redistribution rights. See [`DATA.md`](DATA.md).
+
+This work uses pretrained model implementations and weights from OpenCLIP and torchvision.
+Their licenses and the licenses of the underlying pretrained weights remain separate from this
+repository. A repository code license is intentionally not supplied yet while code ownership
+and third-party licensing are clarified.
+
+Current limitations include the small group size (`n=8`), three selected ROIs, internal
+image-level cross-validation rather than official challenge-test evaluation, and RSA
+subsampling in FAST_MODE.
 
 ## Citation
 
-- Gifford AT, Lahner B, Saba-Sadiya S, Vilas MG, Lascelles A, Oliva A, Kay K, Roig G, Cichy RM. 2023. The Algonauts Project 2023 Challenge: How the Human Brain Makes Sense of Natural Scenes. arXiv preprint, arXiv:2301.03198. DOI: https://doi.org/10.48550/arXiv.2301.03198 
-- Allen EJ, St-Yves G, Wu Y, Breedlove JL, Prince JS, Dowdle LT, Nau M, Caron B, Pestilli F, Charest I, Hutchinson JB, Naselaris T, Kay K. 2022. A massive 7T fMRI dataset to bridge cognitive neuroscience and computational intelligence. Nature Neuroscience, 25(1):116–126. DOI: https://doi.org/10.1038/s41593-021-00962-x 
+- Gifford et al. (2023), *The Algonauts Project 2023 Challenge: How the Human Brain Makes
+  Sense of Natural Scenes*. <https://doi.org/10.48550/arXiv.2301.03198>
+- Allen et al. (2022), *A massive 7T fMRI dataset to bridge cognitive neuroscience and
+  computational intelligence*. <https://doi.org/10.1038/s41593-021-00962-x>
 
----
-
-## Contact
-- Amit Yelin — amityelin@gmail.com  
-- Iking Jose Enrique Lopes — ikinglopez1@gmail.com
-
+Project attribution metadata is available in [`CITATION.cff`](CITATION.cff).
